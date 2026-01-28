@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import { getUser } from "../utils/auth";
+import ActionModal from "../components/ActionModal";
 
 const Admin = () => {
     const [liveEvents, setLiveEvents] = useState([]);
     const [pendingEvents, setPendingEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [pendingAction, setPendingAction] = useState(null);
     const user = getUser();
     const navigate = useNavigate();
 
@@ -34,38 +36,26 @@ const Admin = () => {
         }
     };
 
-    const handleApprove = async (id) => {
-        try {
-            await API.patch(`/events/${id}/approve`);
-            alert("Event approved!");
-            fetchAdminData();
-        } catch (error) {
-            console.error("Approval error:", error);
-            alert("Failed to approve event.");
-        }
-    };
+    const executeAction = async () => {
+        if (!pendingAction) return;
+        const { type, eventId } = pendingAction;
 
-    const handleReject = async (id) => {
-        if (!window.confirm("Are you sure you want to reject/delete this event?")) return;
         try {
-            await API.patch(`/events/${id}/reject`);
-            alert("Event rejected.");
+            if (type === "approve") {
+                await API.patch(`/events/${eventId}/approve`);
+                alert("Event approved!");
+            } else if (type === "reject") {
+                await API.patch(`/events/${eventId}/reject`);
+                alert("Event rejected.");
+            } else if (type === "delete") {
+                await API.delete(`/events/${eventId}`);
+                alert("Event deleted.");
+            }
+            setPendingAction(null);
             fetchAdminData();
         } catch (error) {
-            console.error("Rejection error:", error);
-            alert("Failed to reject event.");
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to permanently delete this event?")) return;
-        try {
-            await API.delete(`/events/${id}`);
-            alert("Event deleted.");
-            fetchAdminData();
-        } catch (error) {
-            console.error("Deletion error:", error);
-            alert("Failed to delete event.");
+            console.error(`${type} error:`, error);
+            alert(`Failed to ${type} event.`);
         }
     };
 
@@ -77,6 +67,12 @@ const Admin = () => {
 
     return (
         <div className="px-6 pb-12 max-w-6xl mx-auto">
+            <ActionModal
+                action={pendingAction}
+                onConfirm={executeAction}
+                onCancel={() => setPendingAction(null)}
+            />
+
             <h1 className="text-4xl font-bold mb-12">Admin <span className="gradient-text">Dashboard</span></h1>
 
             <div className="space-y-12">
@@ -106,22 +102,22 @@ const Admin = () => {
                                                 <p className="text-sm text-primary mt-1">{event.location}</p>
                                             </div>
                                         </div>
-                                        <div className="flex gap-3 w-full md:w-auto">
+                                        <div className="flex items-center gap-4 w-full md:w-auto">
                                             <button
                                                 onClick={() => navigate(`/edit-event/${event._id}`)}
-                                                className="flex-1 md:flex-none bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded-xl transition-all"
+                                                className="text-text-muted hover:text-text font-bold transition-colors"
                                             >
                                                 Edit
                                             </button>
                                             <button
-                                                onClick={() => handleApprove(event._id)}
-                                                className="flex-1 md:flex-none bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-2 rounded-xl transition-all shadow-lg shadow-green-500/20"
+                                                onClick={() => setPendingAction({ type: "approve", eventId: event._id, eventName: event.name })}
+                                                className="text-green-500 hover:text-green-600 font-bold transition-colors"
                                             >
                                                 Approve
                                             </button>
                                             <button
-                                                onClick={() => handleReject(event._id)}
-                                                className="flex-1 md:flex-none bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-2 rounded-xl transition-all shadow-lg shadow-red-500/20"
+                                                onClick={() => setPendingAction({ type: "reject", eventId: event._id, eventName: event.name })}
+                                                className="text-red-500 hover:text-red-600 font-bold transition-colors"
                                             >
                                                 Reject
                                             </button>
@@ -201,22 +197,22 @@ const Admin = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-row md:flex-col gap-3 justify-center">
+                                            <div className="flex flex-row md:flex-col gap-4 items-center justify-center">
                                                 <button
                                                     onClick={() => navigate(`/edit-event/${event._id}`)}
-                                                    className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-6 py-2 rounded-xl transition-all shadow-md"
+                                                    className="text-text-muted hover:text-text font-bold transition-colors"
                                                 >
                                                     Edit
                                                 </button>
                                                 <button
-                                                    onClick={() => handleApprove(event._id)}
-                                                    className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-2 rounded-xl transition-all shadow-lg"
+                                                    onClick={() => setPendingAction({ type: "approve", eventId: event._id, eventName: event.name })}
+                                                    className="text-green-500 hover:text-green-600 font-bold transition-colors"
                                                 >
                                                     Approve
                                                 </button>
                                                 <button
-                                                    onClick={() => handleReject(event._id)}
-                                                    className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-2 rounded-xl transition-all shadow-lg"
+                                                    onClick={() => setPendingAction({ type: "reject", eventId: event._id, eventName: event.name })}
+                                                    className="text-red-500 hover:text-red-600 font-bold transition-colors"
                                                 >
                                                     Reject
                                                 </button>
@@ -254,20 +250,18 @@ const Admin = () => {
                                                 <p className="text-sm text-text-muted">{new Date(event.date).toLocaleDateString()} • {event.location}</p>
                                             </div>
                                         </div>
-                                        <div className="flex gap-2">
+                                        <div className="flex items-center gap-4">
                                             <button
                                                 onClick={() => navigate(`/edit-event/${event._id}`)}
-                                                className="p-3 text-primary hover:bg-primary/10 rounded-xl transition-colors"
-                                                title="Edit Event"
+                                                className="text-primary hover:text-primary-dark font-bold transition-colors"
                                             >
-                                                ✏️
+                                                Edit
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(event._id)}
-                                                className="p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
-                                                title="Delete Event"
+                                                onClick={() => setPendingAction({ type: "delete", eventId: event._id, eventName: event.name })}
+                                                className="text-red-500 hover:text-red-600 font-bold transition-colors"
                                             >
-                                                🗑️
+                                                Delete
                                             </button>
                                         </div>
                                     </div>

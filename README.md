@@ -53,3 +53,5 @@ A full-stack Event Management application built with the MERN stack (MongoDB, Ex
    ```bash
    npm run dev
    ```
+
+---

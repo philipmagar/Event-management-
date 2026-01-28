@@ -6,18 +6,17 @@ const { errorMiddleware, loggerMiddleware } = require("./middleware/commonMiddle
 require("dotenv").config();
 const app = express();
 
-/* -------------------- CORS -------------------- */
-/* -------------------- CORS -------------------- */
-// permissive CORS for debugging Vercel deployment
 app.use(cors({
-    origin: true, // Reflect any requesting origin
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    origin: (origin, callback) => {
+        const allowed = ["http://localhost:5173", process.env.FRONTEND_URL];
+        if (!origin || allowed.includes(origin) || process.env.NODE_ENV === "production") {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     credentials: true,
-    optionsSuccessStatus: 200
 }));
-
-// CORS is already handled by app.use(cors(...)) above
 
 /* -------------------- Environment Check -------------------- */
 if (!process.env.MONGO_URI) {
@@ -52,11 +51,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/bookings", bookingRoutes);
 
-// Mount on root path (fallback for serverless rewrites)
-app.use("/auth", authRoutes);
-app.use("/events", eventRoutes);
-app.use("/bookings", bookingRoutes);
-
 /* -------------------- Root -------------------- */
 app.get("/", (req, res) => {
     res.json({ message: "Welcome to Event Management API" });
@@ -75,11 +69,10 @@ app.use((req, res) => {
 /* -------------------- Error Handler -------------------- */
 app.use(errorMiddleware);
 
-/* -------------------- Export -------------------- */
-const PORT = process.env.PORT || 5000;
-module.exports = app;
-
-/* -------------------- Local Dev -------------------- */
-if (require.main === module) {
+/* -------------------- START SERVER -------------------- */
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
+
+module.exports = app;

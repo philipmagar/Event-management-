@@ -82,19 +82,14 @@ const Navbar = ({ theme, onToggleTheme }) => {
                 {user ? (
                     <button
                         onClick={handleLogout}
-                        className="bg-secondary hover:bg-secondary/90 text-white px-4 py-2 rounded-lg transition-all shadow-lg shadow-secondary/20"
+                        className="text-secondary hover:text-secondary/80 font-bold transition-colors"
                     >
                         Logout
                     </button>
                 ) : (
                     <>
                         <Link to="/login" className="hover:text-primary transition-colors">Sign In</Link>
-                        <Link
-                            to="/register"
-                            className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg transition-all shadow-lg shadow-primary/20"
-                        >
-                            Sign Up
-                        </Link>
+                        <Link to="/register" className="hover:text-primary transition-colors">Sign Up</Link>
                     </>
                 )}
             </div>

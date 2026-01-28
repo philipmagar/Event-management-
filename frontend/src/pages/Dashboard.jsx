@@ -86,7 +86,7 @@ const Dashboard = () => {
                 bookings.length === 0 ? (
                     <div className="glass p-12 rounded-3xl text-center">
                         <p className="text-text-muted text-lg mb-4">You haven't booked any events yet.</p>
-                        <Link to="/" className="inline-block bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl transition-all shadow-lg shadow-primary/20">
+                        <Link to="/" className="text-primary hover:text-primary-dark font-bold transition-colors">
                             Browse Events
                         </Link>
                     </div>
@@ -108,9 +108,9 @@ const Dashboard = () => {
                                             <p>📍 {event.location}</p>
                                             <p>⏰ {new Date(event.date).toLocaleDateString()} at {event.time}</p>
                                         </div>
-                                        <div className="flex gap-3">
-                                            <Link to={`/events/${event._id}`} className="flex-1 text-center bg-primary/10 hover:bg-primary/20 text-primary font-bold py-3 rounded-xl transition-all">Details</Link>
-                                            <button onClick={() => handleCancelBooking(booking._id)} className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg">Cancel</button>
+                                        <div className="flex gap-4">
+                                            <Link to={`/events/${event._id}`} className="text-primary hover:text-primary-dark font-bold transition-colors">Details</Link>
+                                            <button onClick={() => handleCancelBooking(booking._id)} className="text-red-500 hover:text-red-600 font-bold transition-colors">Cancel</button>
                                         </div>
                                     </div>
                                 </div>
@@ -122,7 +122,7 @@ const Dashboard = () => {
                 myEvents.length === 0 ? (
                     <div className="glass p-12 rounded-3xl text-center">
                         <p className="text-text-muted text-lg mb-4">You haven't created any events yet.</p>
-                        <Link to="/add-event" className="inline-block bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl transition-all shadow-lg shadow-primary/20">
+                        <Link to="/add-event" className="text-primary hover:text-primary-dark font-bold transition-colors">
                             Create Event
                         </Link>
                     </div>
@@ -143,9 +143,9 @@ const Dashboard = () => {
                                         <p>📍 {event.location}</p>
                                         <p>⏰ {new Date(event.date).toLocaleDateString()} at {event.time}</p>
                                     </div>
-                                    <div className="flex gap-3">
-                                        <Link to={`/events/${event._id}`} className="flex-1 text-center bg-primary/10 hover:bg-primary/20 text-primary font-bold py-3 rounded-xl transition-all">View</Link>
-                                        <button onClick={() => navigate(`/edit-event/${event._id}`)} className="flex-1 bg-slate-800 hover:bg-black text-white font-bold py-3 rounded-xl transition-all shadow-lg">Edit Event</button>
+                                    <div className="flex gap-4">
+                                        <Link to={`/events/${event._id}`} className="text-primary hover:text-primary-dark font-bold transition-colors">View</Link>
+                                        <button onClick={() => navigate(`/edit-event/${event._id}`)} className="text-text-muted hover:text-text font-bold transition-colors">Edit Event</button>
                                     </div>
                                 </div>
                             </div>

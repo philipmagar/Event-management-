@@ -74,9 +74,9 @@ const Register = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg shadow-primary/30"
+                        className="w-full text-primary hover:text-primary-dark font-semibold py-3 transition-colors flex justify-center items-center gap-2"
                     >
-                        {loading ? "Creating account..." : "Register Now"}
+                        {loading ? "Creating account..." : "Sign Up"}
                     </button>
                 </form>
                 <p className="text-center mt-6 text-text-muted">

@@ -29,6 +29,7 @@ const Events = () => {
     const handleBook = async (eventId) => {
         if (!user) {
             alert("Please login to book an event!");
+            navigate("/login");
             return;
         }
         try {
@@ -109,23 +110,23 @@ const Events = () => {
                                         </Link>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <div className="bg-primary text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg text-center">
+                                        <div className="bg-surface/50 backdrop-blur-md border border-primary/20 text-primary px-4 py-1.5 rounded-full text-sm font-black shadow-sm text-center">
                                             NRS {event.price}
                                         </div>
-                                        <div className="flex gap-2">
+                                        <div className="flex gap-4">
                                             <button
                                                 onClick={() => handleBook(event._id)}
-                                                className="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-primary/20"
+                                                className="text-primary hover:text-primary-dark font-bold transition-colors"
                                             >
                                                 Book Now
                                             </button>
                                             {(user && (user.role === "admin" || user.id === event.createdBy?._id || user.id === event.createdBy)) && (
                                                 <button
                                                     onClick={() => navigate(`/edit-event/${event._id}`)}
-                                                    className="px-4 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 rounded-2xl transition-all"
+                                                    className="text-text-muted hover:text-text font-bold transition-colors"
                                                     title="Edit Event"
                                                 >
-                                                    ✏️
+                                                    Edit
                                                 </button>
                                             )}
                                         </div>

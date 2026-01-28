@@ -88,13 +88,13 @@ const EventDetails = () => {
                             </div>
                         </div>
                         <div className="w-full md:w-auto flex flex-col items-center">
-                            <div className="bg-primary text-white px-6 py-2 rounded-full text-lg font-bold shadow-xl mb-4">
+                            <div className="bg-surface/50 backdrop-blur-md border border-primary/20 text-primary px-6 py-2 rounded-full text-lg font-black shadow-xl mb-4">
                                 NRS {event.price}
                             </div>
                             <button
                                 onClick={handleBook}
                                 disabled={event.capacity - (event.bookingsCount || 0) <= 0}
-                                className="w-full md:w-auto bg-primary hover:bg-primary-dark text-white font-bold px-12 py-4 rounded-2xl transition-all shadow-lg shadow-primary/30 disabled:opacity-50"
+                                className="text-primary hover:text-primary-dark font-bold transition-colors disabled:opacity-50"
                             >
                                 {event.capacity - (event.bookingsCount || 0) <= 0 ? "Event Full" : "Book Now"}
                             </button>
@@ -102,7 +102,7 @@ const EventDetails = () => {
                             {(user && (user.role === "admin" || user.id === event.createdBy?._id)) && (
                                 <button
                                     onClick={() => navigate(`/edit-event/${event._id}`)}
-                                    className="w-full md:w-auto mt-4 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-12 py-3 rounded-2xl transition-all"
+                                    className="mt-4 text-text-muted hover:text-text font-bold transition-colors"
                                 >
                                     Edit Event
                                 </button>

@@ -1,17 +1,7 @@
 import axios from "axios";
 
-const getBaseUrl = () => {
-  // If we're on localhost, use the local backend
-  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
-    return "http://localhost:5000/api";
-  }
-  // In production (Vercel), use relative path to leverage the proxy rewrite.
-  // This is the BEST way to avoid CORS issues entirely.
-  return "/api";
-};
-
 const API = axios.create({
-  baseURL: getBaseUrl(),
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
