@@ -1,5 +1,7 @@
 const Booking = require("../models/Booking");
 const Event = require("../models/Event");
+const User = require("../models/User");
+const { sendBookingConfirmation } = require("../utils/emailService");
 
 const connectDB = require("../config/db");
 
@@ -17,11 +19,6 @@ exports.createBooking = async (req, res) => {
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
-
-        // For local development/testing: allow booking even if not explicitly approved
-        // if (event.status !== "approved") {
-        //     return res.status(400).json({ message: "This event is not available for booking" });
-        // }
 
         // Check if user already booked this event
         const existingBooking = await Booking.findOne({ 
@@ -51,6 +48,17 @@ exports.createBooking = async (req, res) => {
         });
 
         await booking.save();
+
+        // Send confirmation email
+        try {
+            const user = await User.findById(req.user.id);
+            if (user && user.email) {
+                await sendBookingConfirmation(user, event);
+            }
+        } catch (emailError) {
+            console.error("Failed to send booking email:", emailError);
+            // Don't fail the request if email fails
+        }
 
         res.status(201).json({ 
             message: "Booking confirmed successfully!", 

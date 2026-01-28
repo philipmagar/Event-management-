@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const { errorMiddleware, loggerMiddleware } = require("./middleware/commonMiddleware");
+const { initCronJobs } = require("./utils/cronJobs");
 
 require("dotenv").config();
 const app = express();
@@ -61,6 +62,17 @@ app.get("/api/health", (req, res) => {
     res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
+/* -------------------- Cron Trigger (Manual/Vercel) -------------------- */
+const { sendReminders } = require("./utils/cronJobs");
+app.get("/api/cron/reminders", async (req, res) => {
+    try {
+        const result = await sendReminders();
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 /* -------------------- 404 Handler -------------------- */
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
@@ -70,6 +82,8 @@ app.use((req, res) => {
 app.use(errorMiddleware);
 
 /* -------------------- START SERVER -------------------- */
+initCronJobs();
+
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
