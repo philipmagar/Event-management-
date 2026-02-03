@@ -8,7 +8,7 @@ const getSocketUrl = () => {
     const url = new URL(apiUrl);
     return url.origin;
   } catch (e) {
-    return 'http://localhost:5000';
+    return import.meta.env.PROD ? window.location.origin : 'http://localhost:5000';
   }
 };
 
