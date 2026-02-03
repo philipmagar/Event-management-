@@ -21,8 +21,15 @@ app.use(limiter);
 
 app.use(cors({
     origin: (origin, callback) => {
+        // In production, allow all origins (Vercel uses dynamic preview URLs)
+        if (process.env.NODE_ENV === "production") {
+            callback(null, true);
+            return;
+        }
+        
+        // In development, restrict to specific origins
         const allowed = ["http://localhost:5173", process.env.FRONTEND_URL];
-        if (!origin || allowed.includes(origin) || process.env.NODE_ENV === "production") {
+        if (!origin || allowed.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error("Not allowed by CORS"));
