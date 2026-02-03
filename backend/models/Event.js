@@ -7,6 +7,9 @@ const EventSchema = new mongoose.Schema({
     location: { type: String, required: true },
     capacity: { type: Number, required: true },
     price: { type: Number, default: 0 },
+    category: { type: String, default: "General" },
+    agenda: { type: String },
+    tags: [{ type: String }],
     image: { type: String },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
@@ -15,5 +18,11 @@ const EventSchema = new mongoose.Schema({
         default: null
     },
 }, { timestamps: true });
+
+// Indexing for scalability
+EventSchema.index({ name: 'text', description: 'text', location: 'text' });
+EventSchema.index({ status: 1, date: 1 });
+EventSchema.index({ createdBy: 1 });
+EventSchema.index({ date: 1 });
 
 module.exports = mongoose.models.Event || mongoose.model("Event", EventSchema);

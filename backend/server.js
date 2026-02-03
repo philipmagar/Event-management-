@@ -1,11 +1,23 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
 const connectDB = require("./config/db");
 const { errorMiddleware, loggerMiddleware } = require("./middleware/commonMiddleware");
-const { initCronJobs } = require("./utils/cronJobs");
-
 require("dotenv").config();
 const app = express();
+
+app.use(helmet()); // Set security HTTP headers
+
+// Rate limiting: 100 requests per 10 minutes
+const limiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 100,
+    message: "Too many requests from this IP, please try again later."
+});
+app.use(limiter);
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -30,6 +42,8 @@ if (!process.env.MONGO_URI) {
 app.use(loggerMiddleware);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(mongoSanitize()); // Data sanitization against NoSQL query injection
+app.use(xss()); // Data sanitization against XSS
 
 // Debug middleware to log request path
 app.use((req, res, next) => {
@@ -62,17 +76,6 @@ app.get("/api/health", (req, res) => {
     res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
-/* -------------------- Cron Trigger (Manual/Vercel) -------------------- */
-const { sendReminders } = require("./utils/cronJobs");
-app.get("/api/cron/reminders", async (req, res) => {
-    try {
-        const result = await sendReminders();
-        res.json(result);
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
 /* -------------------- 404 Handler -------------------- */
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
@@ -82,11 +85,13 @@ app.use((req, res) => {
 app.use(errorMiddleware);
 
 /* -------------------- START SERVER -------------------- */
-initCronJobs();
-
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    
+    // Initialize Socket.io
+    const { init } = require("./utils/socket");
+    init(server);
 }
 
 module.exports = app;

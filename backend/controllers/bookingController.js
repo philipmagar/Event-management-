@@ -1,18 +1,17 @@
 const Booking = require("../models/Booking");
 const Event = require("../models/Event");
 const User = require("../models/User");
-const { sendBookingConfirmation } = require("../utils/emailService");
+const { emitUpdate } = require("../utils/socket");
+const { validationResult } = require("express-validator");
 
-const connectDB = require("../config/db");
-
-exports.createBooking = async (req, res) => {
+exports.createBooking = async (req, res, next) => {
     try {
-        await connectDB();
-        const { eventId } = req.body;
-
-        if (!eventId) {
-            return res.status(400).json({ message: "Event ID is required" });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
+
+        const { eventId } = req.body;
 
         // Check if event exists and is approved
         const event = await Event.findById(eventId);
@@ -49,30 +48,20 @@ exports.createBooking = async (req, res) => {
 
         await booking.save();
 
-        // Send confirmation email
-        try {
-            const user = await User.findById(req.user.id);
-            if (user && user.email) {
-                await sendBookingConfirmation(user, event);
-            }
-        } catch (emailError) {
-            console.error("Failed to send booking email:", emailError);
-            // Don't fail the request if email fails
-        }
+        // Emit real-time update
+        emitUpdate("bookingUpdated", { eventId });
 
         res.status(201).json({ 
             message: "Booking confirmed successfully!", 
             booking 
         });
     } catch (error) {
-        console.error("createBooking Error:", error);
-        res.status(500).json({ message: "Error creating booking", error: error.message });
+        next(error);
     }
 };
 
-exports.getUserBookings = async (req, res) => {
+exports.getUserBookings = async (req, res, next) => {
     try {
-        await connectDB();
         const bookings = await Booking.find({ user: req.user.id })
             .populate("event")
             .sort({ createdAt: -1 });
@@ -82,14 +71,12 @@ exports.getUserBookings = async (req, res) => {
 
         res.json(validBookings);
     } catch (error) {
-        console.error("getUserBookings Error:", error);
-        res.status(500).json({ message: "Error fetching bookings", error: error.message });
+        next(error);
     }
 };
 
-exports.cancelBooking = async (req, res) => {
+exports.cancelBooking = async (req, res, next) => {
     try {
-        await connectDB();
         const booking = await Booking.findById(req.params.id);
 
         if (!booking) {
@@ -108,9 +95,11 @@ exports.cancelBooking = async (req, res) => {
         booking.status = "cancelled";
         await booking.save();
 
+        // Emit real-time update
+        emitUpdate("bookingUpdated", { eventId: booking.event });
+
         res.json({ message: "Booking cancelled successfully!", booking });
     } catch (error) {
-        console.error("cancelBooking Error:", error);
-        res.status(500).json({ message: "Error cancelling booking", error: error.message });
+        next(error);
     }
 };

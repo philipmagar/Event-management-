@@ -1,22 +1,16 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { validationResult } = require("express-validator");
 
-const connectDB = require("../config/db");
-
-exports.register = async (req, res) => {
+exports.register = async (req, res, next) => {
     try {
-        await connectDB();
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
         const { name, email, password } = req.body;
-
-        // Validation
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-
-        if (!email.includes("@")) {
-            return res.status(400).json({ message: "Invalid email format" });
-        }
 
         const user = await User.findOne({ email });
         if (user) {
@@ -33,24 +27,18 @@ exports.register = async (req, res) => {
 
         res.status(201).json({ token, user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role } });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        next(error);
     }
 };
 
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
     try {
-        await connectDB();
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
         const { email, password } = req.body;
-
-        // Validation
-        if (!email || !password) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-
-        if (!email.includes("@")) {
-            return res.status(400).json({ message: "Invalid email format" });
-        }
 
         const user = await User.findOne({ email });
         if (!user) {
@@ -68,21 +56,18 @@ exports.login = async (req, res) => {
 
         res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        next(error);
     }
 };
 
-exports.getProfile = async (req, res) => {
+exports.getProfile = async (req, res, next) => {
     try {
-        await connectDB();
         const user = await User.findById(req.user.id).select("-password");
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
         res.json(user);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        next(error);
     }
 };

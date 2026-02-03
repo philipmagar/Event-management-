@@ -1,12 +1,10 @@
 const Event = require("../models/Event");
 const Booking = require("../models/Booking");
+const { validationResult } = require("express-validator");
 
-const connectDB = require("../config/db");
-
-exports.getEvents = async (req, res) => {
+exports.getEvents = async (req, res, next) => {
     try {
-        await connectDB();
-        const { status } = req.query;
+        const { status, search } = req.query;
         let query = {};
         
         if (status && status !== 'all') {
@@ -14,11 +12,15 @@ exports.getEvents = async (req, res) => {
         } else if (!status) {
             query.status = "approved";
         }
-        // If status is 'all', we don't add the status filter (returns everything)
 
-        console.log("Fetching events with query:", JSON.stringify(query));
+        if (search) {
+            query.$text = { $search: search };
+        }
 
-        const events = await Event.find(query).populate("createdBy", "name email").lean();
+        const events = await Event.find(query)
+            .populate("createdBy", "name email")
+            .sort(search ? { score: { $meta: "textScore" } } : { createdAt: -1 })
+            .lean();
         
         if (!events) {
              return res.json([]);
@@ -32,18 +34,12 @@ exports.getEvents = async (req, res) => {
 
         res.json(eventsWithBookings);
     } catch (error) {
-        console.error("getEvents Error details:", error);
-        res.status(500).json({ 
-            message: "Error fetching events", 
-            error: error.message,
-            stack: process.env.NODE_ENV === "development" ? error.stack : undefined
-        });
+        next(error);
     }
 };
 
-exports.getEventById = async (req, res) => {
+exports.getEventById = async (req, res, next) => {
     try {
-        await connectDB();
         const event = await Event.findById(req.params.id).populate("createdBy", "name email").lean();
         
         if (!event) {
@@ -55,20 +51,18 @@ exports.getEventById = async (req, res) => {
         
         res.json({ ...event, bookingsCount });
     } catch (error) {
-        console.error("getEventById Error:", error);
-        res.status(500).json({ message: "Error fetching event", error: error.message });
+        next(error);
     }
 };
 
-exports.createEvent = async (req, res) => {
+exports.createEvent = async (req, res, next) => {
     try {
-        await connectDB();
-        const { name, description, date, time, location, capacity, price, image } = req.body;
-
-        // Validation
-        if (!name || !description || !date || !time || !location || !capacity) {
-            return res.status(400).json({ message: "All required fields must be provided" });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
+
+        const { name, description, date, time, location, capacity, price, image, category, agenda, tags } = req.body;
 
         const event = new Event({
             name,
@@ -78,6 +72,9 @@ exports.createEvent = async (req, res) => {
             location,
             capacity: Number(capacity),
             price: Number(price) || 0,
+            category: category || "General",
+            agenda,
+            tags: Array.isArray(tags) ? tags : [],
             image,
             createdBy: req.user.id,
             status: req.user.role === "admin" ? "approved" : "pending"
@@ -92,14 +89,12 @@ exports.createEvent = async (req, res) => {
             event 
         });
     } catch (error) {
-        console.error("createEvent Error:", error);
-        res.status(500).json({ message: "Error creating event", error: error.message });
+        next(error);
     }
 };
 
-exports.approveEvent = async (req, res) => {
+exports.approveEvent = async (req, res, next) => {
     try {
-        await connectDB();
         const event = await Event.findById(req.params.id);
         
         if (!event) {
@@ -117,14 +112,12 @@ exports.approveEvent = async (req, res) => {
 
         res.json({ message: "Event approved successfully!", event });
     } catch (error) {
-        console.error("approveEvent Error:", error);
-        res.status(500).json({ message: "Error approving event", error: error.message });
+        next(error);
     }
 };
 
-exports.rejectEvent = async (req, res) => {
+exports.rejectEvent = async (req, res, next) => {
     try {
-        await connectDB();
         const event = await Event.findById(req.params.id);
         
         if (!event) {
@@ -149,14 +142,17 @@ exports.rejectEvent = async (req, res) => {
 
         res.json({ message: "Event rejected.", event });
     } catch (error) {
-        console.error("rejectEvent Error:", error);
-        res.status(500).json({ message: "Error rejecting event", error: error.message });
+        next(error);
     }
 };
 
-exports.updateEvent = async (req, res) => {
+exports.updateEvent = async (req, res, next) => {
     try {
-        await connectDB();
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
         const event = await Event.findById(req.params.id);
         
         if (!event) {
@@ -171,8 +167,21 @@ exports.updateEvent = async (req, res) => {
             return res.status(403).json({ message: "Not authorized to update this event" });
         }
 
-        const { name, description, date, time, location, capacity, price, image } = req.body;
-        const updates = { name, description, date, time, location, capacity, price, image };
+        const { name, description, date, time, location, capacity, price, image, category, agenda, tags } = req.body;
+        
+        // Filter out undefined fields to avoid overwriting with undefined
+        const updates = {};
+        if (name !== undefined) updates.name = name;
+        if (description !== undefined) updates.description = description;
+        if (date !== undefined) updates.date = date;
+        if (time !== undefined) updates.time = time;
+        if (location !== undefined) updates.location = location;
+        if (capacity !== undefined) updates.capacity = capacity;
+        if (price !== undefined) updates.price = price;
+        if (image !== undefined) updates.image = image;
+        if (category !== undefined) updates.category = category;
+        if (agenda !== undefined) updates.agenda = agenda;
+        if (tags !== undefined) updates.tags = tags;
 
         // Admin can update directly
         if (isAdmin) {
@@ -184,7 +193,8 @@ exports.updateEvent = async (req, res) => {
 
         // Non-admin: store as pending updates for approved events
         if (event.status === "approved") {
-            event.pendingUpdates = updates;
+            // Merge existing pending updates with new updates if any
+            event.pendingUpdates = { ...(event.pendingUpdates || {}), ...updates };
             await event.save();
             return res.json({ 
                 message: "Update submitted for admin approval!", 
@@ -197,14 +207,12 @@ exports.updateEvent = async (req, res) => {
         await event.save();
         res.json({ message: "Event updated!", event });
     } catch (error) {
-        console.error("updateEvent Error:", error);
-        res.status(500).json({ message: "Error updating event", error: error.message });
+        next(error);
     }
 };
 
-exports.deleteEvent = async (req, res) => {
+exports.deleteEvent = async (req, res, next) => {
     try {
-        await connectDB();
         const event = await Event.findById(req.params.id);
         
         if (!event) {
@@ -218,14 +226,12 @@ exports.deleteEvent = async (req, res) => {
         
         res.json({ message: "Event and associated bookings deleted successfully!" });
     } catch (error) {
-        console.error("deleteEvent Error:", error);
-        res.status(500).json({ message: "Error deleting event", error: error.message });
+        next(error);
     }
 };
 
-exports.getMyEvents = async (req, res) => {
+exports.getMyEvents = async (req, res, next) => {
     try {
-        await connectDB();
         const events = await Event.find({ createdBy: req.user.id })
             .populate("createdBy", "name email")
             .sort({ createdAt: -1 })
@@ -239,7 +245,6 @@ exports.getMyEvents = async (req, res) => {
 
         res.json(eventsWithBookings);
     } catch (error) {
-        console.error("getMyEvents Error:", error);
-        res.status(500).json({ message: "Error fetching your events", error: error.message });
+        next(error);
     }
 };

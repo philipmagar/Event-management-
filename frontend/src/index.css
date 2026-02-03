@@ -2,187 +2,172 @@
 @import "tailwindcss";
 
 :root {
+  /* Brand Colors */
   --color-primary: #6366f1;
-  --color-primary-rgb: 99, 102, 241;
-  /* Added */
   --color-primary-dark: #4f46e5;
+  --color-primary-light: #818cf8;
   --color-secondary: #ec4899;
-  --color-secondary-rgb: 236, 72, 153;
-  /* Added */
   --color-accent: #8b5cf6;
+
+  /* System Colors - Light Mode */
   --color-background: #f8fafc;
   --color-surface: #ffffff;
+  --color-surface-hover: #f1f5f9;
   --color-text: #0f172a;
   --color-text-muted: #64748b;
-  --color-border: rgba(15, 23, 42, 0.14);
-  --glass-bg: rgba(255, 255, 255, 0.8);
-  --glass-bg-hover: rgba(255, 255, 255, 0.9);
-  --scrollbar-thumb: #cbd5e1;
+  --color-border: rgba(15, 23, 42, 0.08);
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+
+  /* Radii */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
   --font-sans: 'Outfit', sans-serif;
 }
 
 html[data-theme="dark"] {
-  --color-background: #0b1220;
+  /* System Colors - Dark Mode */
+  --color-background: #020617;
   --color-surface: #0f172a;
+  --color-surface-hover: #1e293b;
   --color-text: #f1f5f9;
   --color-text-muted: #94a3b8;
-  --color-border: rgba(241, 245, 249, 0.14);
-  --glass-bg: rgba(15, 23, 42, 0.72);
-  --glass-bg-hover: rgba(15, 23, 42, 0.82);
-  --scrollbar-thumb: #475569;
+  --color-border: rgba(241, 245, 249, 0.1);
+
+  /* Glassmorphism - Dark Mode */
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-border: var(--color-border);
 }
 
 html {
   font-family: var(--font-sans);
   background-color: var(--color-background);
   color: var(--color-text);
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
+  background: var(--color-border);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
-/* Glassmorphism utility */
-.glass {
+/* Custom Utilities */
+@utility glass {
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
-.glass-hover:hover {
-  background: var(--glass-bg-hover);
-  border: 1px solid var(--color-border);
+.glass-card {
+  @apply glass;
+  border: 1px solid var(--glass-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: var(--color-primary-light);
+  transform: translateY(-4px);
 }
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent), var(--color-secondary));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
 }
 
-/* 3D Flip Button Effect - Large & Appealing */
-.flip-btn-wrapper {
-  perspective: 1200px;
-  display: inline-block;
-  vertical-align: middle;
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
-.flip-btn {
-  display: block;
-  position: relative;
-  width: 120px;
-  height: 48px;
-  transition: width 0.8s cubic-bezier(0.230, 1.000, 0.320, 1.000),
-    height 0.8s cubic-bezier(0.230, 1.000, 0.320, 1.000),
-    transform 0.8s cubic-bezier(0.175, 0.885, 0.320, 1.275);
+/* 3D Flip Effects */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
   transform-style: preserve-3d;
-  transform-origin: 50% 50%;
 }
 
-.flip-btn-front {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-  backface-visibility: hidden;
-  border-radius: 12px;
-  background-color: transparent;
-  font-size: 16px;
-  letter-spacing: 0.5px;
+/* Animated Background */
+.bg-mesh {
+  background-color: var(--color-background);
+  background-image:
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.1) 0, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.1) 0, transparent 50%);
 }
 
-.flip-btn-back {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background-color: var(--color-surface);
-  transform: translateZ(-1px) rotateX(180deg);
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  backface-visibility: hidden;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-  padding: 15px;
-}
-
-.flip-btn.is-open {
-  width: 280px;
-  height: 140px;
-  transform: rotateX(180deg);
-}
-
-.flip-btn-back p {
-  font-size: 14px;
-  margin-bottom: 16px;
-  font-weight: 700;
-  color: var(--color-text);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.flip-btn-back .btn-group {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  justify-content: center;
-}
-
-.flip-btn-back button {
-  padding: 10px 24px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.flip-btn-back .btn-yes {
-  background-color: var(--color-primary);
+/* Button variants */
+.btn-primary {
+  @apply relative overflow-hidden px-6 py-2.5 rounded-xl font-medium transition-all duration-300;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: white;
-  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 }
 
-.flip-btn-back .btn-yes:hover {
+.btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(var(--color-primary-rgb), 0.4);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
 }
 
-.flip-btn-back .btn-no {
-  background-color: var(--color-border);
-  color: var(--color-text-muted);
+.btn-secondary {
+  @apply px-6 py-2.5 rounded-xl font-medium transition-all duration-300 border border-primary text-primary;
 }
 
-.flip-btn-back .btn-no:hover {
-  background-color: var(--color-text-muted);
-  color: var(--color-surface);
+.btn-secondary:hover {
+  @apply bg-primary text-white;
 }

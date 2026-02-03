@@ -2,10 +2,16 @@ const errorMiddleware = (err, req, res, next) => {
     console.error(err.stack);
     
     const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-    res.status(statusCode).json({
+    
+    const response = {
         message: err.message,
-        stack: process.env.NODE_ENV === "production" ? null : err.stack,
-    });
+    };
+
+    if (process.env.NODE_ENV !== "production") {
+        response.stack = err.stack;
+    }
+
+    res.status(statusCode).json(response);
 };
 
 const loggerMiddleware = (req, res, next) => {
