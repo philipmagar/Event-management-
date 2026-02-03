@@ -42,8 +42,8 @@ if (!process.env.MONGO_URI) {
 app.use(loggerMiddleware);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-app.use(mongoSanitize()); // Data sanitization against NoSQL query injection
-app.use(xss()); // Data sanitization against XSS
+app.use("/api", mongoSanitize()); // Data sanitization against NoSQL query injection
+app.use("/api", xss()); // Data sanitization against XSS
 
 // Debug middleware to log request path
 app.use((req, res, next) => {

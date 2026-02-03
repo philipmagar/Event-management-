@@ -1,10 +1,17 @@
 const errorMiddleware = (err, req, res, next) => {
     console.error(err.stack);
     
-    const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-    
+    let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+    let message = err.message;
+
+    // Mongoose bad ObjectId
+    if (err.name === 'CastError' && err.kind === 'ObjectId') {
+        statusCode = 404;
+        message = 'Resource not found';
+    }
+
     const response = {
-        message: err.message,
+        message: message,
     };
 
     if (process.env.NODE_ENV !== "production") {
