@@ -5,8 +5,9 @@ const rateLimit = require("express-rate-limit");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const connectDB = require("./config/db");
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const { errorMiddleware, loggerMiddleware } = require("./middleware/commonMiddleware");
-require("dotenv").config();
 const app = express();
 
 app.use(helmet()); // Set security HTTP headers
@@ -28,10 +29,11 @@ app.use(cors({
         }
         
         // In development, restrict to specific origins
-        const allowed = ["http://localhost:5173", process.env.FRONTEND_URL];
+        const allowed = ["http://localhost:5173", "http://localhost:4173", process.env.FRONTEND_URL];
         if (!origin || allowed.includes(origin)) {
             callback(null, true);
         } else {
+            console.error(`CORS Blocked: Origin ${origin} not in`, allowed);
             callback(new Error("Not allowed by CORS"));
         }
     },
@@ -58,7 +60,18 @@ app.use((req, res, next) => {
     next();
 });
 
-/* -------------------- DB Connection -------------------- */
+/* -------------------- DB Connection Middleware -------------------- */
+// Ensure DB is connected before processing any /api requests
+app.use("/api", async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
+
+/* -------------------- DB Connection (Immediate) -------------------- */
 connectDB().catch(err => {
     console.error("Database connection failed during startup:", err.message);
 });
