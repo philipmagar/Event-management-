@@ -62,4 +62,21 @@ npm run dev
 - [ ] More robust "Admin" analytics
 
 ---
+
+## Deployment
+
+### Vercel (Recommended for Frontend)
+This project is configured for Vercel deployment. See detailed guides:
+- **[VERCEL_FIXES.md](VERCEL_FIXES.md)** - Quick summary of fixes and deployment steps
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Comprehensive deployment guide
+
+**Quick Deploy**:
+1. Push to GitHub
+2. Import to Vercel
+3. Add environment variables (see `.env.example`)
+4. Deploy!
+
+**Note**: Vercel doesn't support WebSockets, so real-time features are disabled in production. For full features, consider deploying the backend to Railway or Render.
+
+---
 *If you're browsing this code, don't judge the inconsistent commit messages.

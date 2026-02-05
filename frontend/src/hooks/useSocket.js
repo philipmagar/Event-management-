@@ -18,6 +18,12 @@ export const useSocket = (eventName, callback) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
+    // Disable Socket.io in production (Vercel doesn't support WebSockets)
+    if (import.meta.env.PROD) {
+      console.warn('Socket.io is disabled in production. Real-time updates are not available.');
+      return;
+    }
+
     const s = io(SOCKET_URL);
     setSocket(s);
 

@@ -99,6 +99,7 @@ if (process.env.NODE_ENV !== 'production') {
     // Initialize Socket.io
     const { init } = require("./utils/socket");
     init(server);
+    // Socket.io initialized
 }
 
 module.exports = app;
