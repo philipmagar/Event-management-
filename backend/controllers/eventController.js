@@ -25,14 +25,7 @@ exports.getEvents = async (req, res, next) => {
         if (!events) {
              return res.json([]);
         }
-
-        // Add booking count for each event
-        const eventsWithBookings = await Promise.all(events.map(async (event) => {
-            const bookingsCount = await Booking.countDocuments({ event: event._id });
-            return { ...event, bookingsCount };
-        }));
-
-        res.json(eventsWithBookings);
+        res.json(events);
     } catch (error) {
         next(error);
     }
@@ -46,10 +39,7 @@ exports.getEventById = async (req, res, next) => {
             return res.status(404).json({ message: "Event not found" });
         }
 
-        // Add booking count
-        const bookingsCount = await Booking.countDocuments({ event: event._id });
-        
-        res.json({ ...event, bookingsCount });
+        res.json(event);
     } catch (error) {
         next(error);
     }
@@ -100,8 +90,6 @@ exports.approveEvent = async (req, res, next) => {
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
-
-        // If there are pending updates, apply them
         if (event.pendingUpdates) {
             Object.assign(event, event.pendingUpdates);
             event.pendingUpdates = null;
@@ -119,28 +107,22 @@ exports.approveEvent = async (req, res, next) => {
 exports.rejectEvent = async (req, res, next) => {
     try {
         const event = await Event.findById(req.params.id);
+        const { reason } = req.body;
         
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
 
-        // If it's a pending new event, delete it
-        if (event.status === "pending" && !event.pendingUpdates) {
-            await Event.findByIdAndDelete(req.params.id);
-            return res.json({ message: "Event rejected and deleted." });
-        }
-
-        // If it has pending updates, just clear them
         if (event.pendingUpdates) {
             event.pendingUpdates = null;
+            event.rejectionReason = reason || "Updates rejected.";
             await event.save();
             return res.json({ message: "Pending updates rejected.", event });
         }
+        await Booking.deleteMany({ event: req.params.id });
+        await Event.findByIdAndDelete(req.params.id);
 
-        event.status = "rejected";
-        await event.save();
-
-        res.json({ message: "Event rejected.", event });
+        res.json({ message: "Event registration rejected and removed from system." });
     } catch (error) {
         next(error);
     }
@@ -159,7 +141,6 @@ exports.updateEvent = async (req, res, next) => {
             return res.status(404).json({ message: "Event not found" });
         }
 
-        // Check authorization
         const isOwner = event.createdBy.toString() === req.user.id;
         const isAdmin = req.user.role === "admin";
 
@@ -168,8 +149,6 @@ exports.updateEvent = async (req, res, next) => {
         }
 
         const { name, description, date, time, location, capacity, price, image, category, agenda, tags } = req.body;
-        
-        // Filter out undefined fields to avoid overwriting with undefined
         const updates = {};
         if (name !== undefined) updates.name = name;
         if (description !== undefined) updates.description = description;
@@ -182,18 +161,14 @@ exports.updateEvent = async (req, res, next) => {
         if (category !== undefined) updates.category = category;
         if (agenda !== undefined) updates.agenda = agenda;
         if (tags !== undefined) updates.tags = tags;
-
-        // Admin can update directly
         if (isAdmin) {
             Object.assign(event, updates);
-            event.pendingUpdates = null; // Clear any pending updates
+            event.pendingUpdates = null; 
             await event.save();
             return res.json({ message: "Event updated successfully!", event });
         }
 
-        // Non-admin: store as pending updates for approved events
         if (event.status === "approved") {
-            // Merge existing pending updates with new updates if any
             event.pendingUpdates = { ...(event.pendingUpdates || {}), ...updates };
             await event.save();
             return res.json({ 
@@ -202,10 +177,15 @@ exports.updateEvent = async (req, res, next) => {
             });
         }
 
-        // For pending events, update directly
         Object.assign(event, updates);
+        
+        if (event.status === "rejected") {
+            event.status = "pending";
+            event.rejectionReason = ""; 
+        }
+        
         await event.save();
-        res.json({ message: "Event updated!", event });
+        res.json({ message: "Event updated and resubmitted for approval!", event });
     } catch (error) {
         next(error);
     }
@@ -219,7 +199,13 @@ exports.deleteEvent = async (req, res, next) => {
             return res.status(404).json({ message: "Event not found" });
         }
 
-        // Delete all associated bookings first
+        const isOwner = event.createdBy.toString() === req.user.id;
+        const isAdmin = req.user.role === "admin";
+
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ message: "Not authorized to delete this event" });
+        }
+
         await Booking.deleteMany({ event: req.params.id });
         
         await Event.findByIdAndDelete(req.params.id);
@@ -237,13 +223,7 @@ exports.getMyEvents = async (req, res, next) => {
             .sort({ createdAt: -1 })
             .lean();
 
-        // Add booking count for each event
-        const eventsWithBookings = await Promise.all(events.map(async (event) => {
-            const bookingsCount = await Booking.countDocuments({ event: event._id });
-            return { ...event, bookingsCount };
-        }));
-
-        res.json(eventsWithBookings);
+        res.json(events);
     } catch (error) {
         next(error);
     }
