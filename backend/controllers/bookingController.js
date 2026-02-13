@@ -30,13 +30,7 @@ exports.createBooking = async (req, res, next) => {
             return res.status(400).json({ message: "You have already booked this event" });
         }
 
-        // Check capacity
-        const bookingsCount = await Booking.countDocuments({ 
-            event: eventId, 
-            status: { $ne: "cancelled" } 
-        });
-        
-        if (bookingsCount >= event.capacity) {
+        if ((event.bookingsCount || 0) >= event.capacity) {
             return res.status(400).json({ message: "This event is fully booked" });
         }
 
@@ -47,6 +41,9 @@ exports.createBooking = async (req, res, next) => {
         });
 
         await booking.save();
+
+        // Atomically increment booking count
+        await Event.findByIdAndUpdate(eventId, { $inc: { bookingsCount: 1 } });
 
         // Emit real-time update
         emitUpdate("bookingUpdated", { eventId });
@@ -92,13 +89,16 @@ exports.cancelBooking = async (req, res, next) => {
             return res.status(400).json({ message: "Booking is already cancelled" });
         }
 
-        booking.status = "cancelled";
-        await booking.save();
+        // Permanently delete the booking
+        await Booking.findByIdAndDelete(req.params.id);
+
+        // Atomically decrement booking count
+        await Event.findByIdAndUpdate(booking.event, { $inc: { bookingsCount: -1 } });
 
         // Emit real-time update
         emitUpdate("bookingUpdated", { eventId: booking.event });
 
-        res.json({ message: "Booking cancelled successfully!", booking });
+        res.json({ message: "Registration removed and booking cancelled successfully!" });
     } catch (error) {
         next(error);
     }
