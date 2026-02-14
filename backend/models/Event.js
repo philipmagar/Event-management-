@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const EventSchema = new mongoose.Schema({
+const EventSchema = new mongoose.Schema(
+  {
     name: { type: String, required: true, trim: true },
     description: { type: String, required: true },
     date: { type: Date, required: true },
@@ -11,16 +12,26 @@ const EventSchema = new mongoose.Schema({
     agenda: { type: String },
     tags: [{ type: String }],
     image: { type: String },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
-    pendingUpdates: {
-        type: Object,
-        default: null
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-}, { timestamps: true });
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+      trim: true,
+    },
+    pendingUpdates: {
+      type: Object,
+      default: null,
+    },
+  },
+  { timestamps: true },
+);
 
-// Indexing for scalability
-EventSchema.index({ name: 'text', description: 'text', location: 'text' });
+EventSchema.index({ name: "text", description: "text", location: "text" });
 EventSchema.index({ status: 1, date: 1 });
 EventSchema.index({ createdBy: 1 });
 EventSchema.index({ date: 1 });

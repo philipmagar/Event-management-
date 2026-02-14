@@ -1,4 +1,5 @@
-const mongoose =require("mongoose");
+const mongoose = require("mongoose");
+const logger = require("../utils/logger");
 let cached = global.mongoose;
 
 if (!cached) {
@@ -7,7 +8,6 @@ if (!cached) {
 
 const connectDB = async () => {
   if (cached.conn) {
-    console.log("Using cached MongoDB connection");
     return cached.conn;
   }
 
@@ -20,16 +20,18 @@ const connectDB = async () => {
       bufferCommands: false,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
-      family: 4 // Force IPv4 to fix Vercel/Atlas connection issues
+      family: 4, 
     };
 
-    console.log("Connecting to MongoDB...");
+    logger.info("Connecting to MongoDB...");
     mongoose.set("strictQuery", false);
 
-    cached.promise = mongoose.connect(process.env.MONGO_URI, opts).then((mongoose) => {
-      console.log("MongoDB connected successfully");
-      return mongoose;
-    });
+    cached.promise = mongoose
+      .connect(process.env.MONGO_URI, opts)
+      .then((mongoose) => {
+        logger.info("MongoDB connected successfully");
+        return mongoose;
+      });
   }
 
   try {
@@ -37,8 +39,9 @@ const connectDB = async () => {
     return cached.conn;
   } catch (e) {
     cached.promise = null;
-    console.error("CRITICAL: MongoDB connection error:", e.message);
+    logger.error(`CRITICAL: MongoDB connection error: ${e.message}`);
     throw e;
   }
 };
+
 module.exports = connectDB;

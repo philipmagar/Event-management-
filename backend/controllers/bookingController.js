@@ -13,13 +13,11 @@ exports.createBooking = async (req, res, next) => {
 
         const { eventId } = req.body;
 
-        // Check if event exists and is approved
         const event = await Event.findById(eventId);
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
 
-        // Check if user already booked this event
         const existingBooking = await Booking.findOne({ 
             event: eventId, 
             user: req.user.id,
@@ -42,10 +40,8 @@ exports.createBooking = async (req, res, next) => {
 
         await booking.save();
 
-        // Atomically increment booking count
         await Event.findByIdAndUpdate(eventId, { $inc: { bookingsCount: 1 } });
 
-        // Emit real-time update
         emitUpdate("bookingUpdated", { eventId });
 
         res.status(201).json({ 
@@ -62,8 +58,6 @@ exports.getUserBookings = async (req, res, next) => {
         const bookings = await Booking.find({ user: req.user.id })
             .populate("event")
             .sort({ createdAt: -1 });
-
-        // Filter out bookings where event was deleted
         const validBookings = bookings.filter(booking => booking.event !== null);
 
         res.json(validBookings);
@@ -80,7 +74,6 @@ exports.cancelBooking = async (req, res, next) => {
             return res.status(404).json({ message: "Booking not found" });
         }
 
-        // Check if user owns this booking
         if (booking.user.toString() !== req.user.id) {
             return res.status(403).json({ message: "Not authorized to cancel this booking" });
         }
@@ -89,13 +82,10 @@ exports.cancelBooking = async (req, res, next) => {
             return res.status(400).json({ message: "Booking is already cancelled" });
         }
 
-        // Permanently delete the booking
         await Booking.findByIdAndDelete(req.params.id);
 
-        // Atomically decrement booking count
         await Event.findByIdAndUpdate(booking.event, { $inc: { bookingsCount: -1 } });
 
-        // Emit real-time update
         emitUpdate("bookingUpdated", { eventId: booking.event });
 
         res.json({ message: "Registration removed and booking cancelled successfully!" });

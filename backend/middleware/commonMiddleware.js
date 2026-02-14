@@ -1,38 +1,50 @@
+const logger = require("../utils/logger");
+
 const errorMiddleware = (err, req, res, next) => {
-    // Log the full stack for the developer
-    console.error(`[ERROR] ${req.method} ${req.url}:`, err.stack);
-    
-    // Default to 500 if no status code is set
-    let statusCode = err.status || (res.statusCode === 200 ? 500 : res.statusCode);
-    let message = err.message || "Internal Server Error";
+  logger.error(`${req.method} ${req.url}: ${err.message}`, {
+    stack: err.stack,
+  });
 
-    // Handle specific error types
-    if (err.name === 'CastError' && err.kind === 'ObjectId') {
-        statusCode = 404;
-        message = 'Resource not found';
-    }
+  let statusCode =
+    err.status || (res.statusCode === 200 ? 500 : res.statusCode);
+  let message = err.message || "Internal Server Error";
 
-    if (err.message === "Not allowed by CORS") {
-        statusCode = 403; // Forbidden instead of 500
-    }
+  if (err.name === "CastError" && err.kind === "ObjectId") {
+    statusCode = 404;
+    message = "Resource not found";
+  }
 
-    const response = {
-        message: message,
-        status: "error"
-    };
+  if (err.message === "Not allowed by CORS") {
+    statusCode = 403;
+    message = "CORS Blocked: Origin not allowed";
+  }
 
-    // Include stack trace and more info in development
-    if (process.env.NODE_ENV !== "production") {
-        response.stack = err.stack;
-        response.details = err;
-    }
+  if (process.env.NODE_ENV === "production" && statusCode === 500) {
+    message = "An unexpected error occurred. Please try again later.";
+  }
 
-    res.status(statusCode).json(response);
+  const response = {
+    message: message,
+    status: "error",
+  };
+
+  if (process.env.NODE_ENV !== "production") {
+    response.stack = err.stack;
+    response.details = err;
+  }
+
+  res.status(statusCode).json(response);
 };
 
 const loggerMiddleware = (req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-    next();
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    logger.info(
+      `${req.method} ${req.originalUrl || req.url} - ${res.statusCode} (${duration}ms)`,
+    );
+  });
+  next();
 };
 
 module.exports = { errorMiddleware, loggerMiddleware };

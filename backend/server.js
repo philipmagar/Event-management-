@@ -4,115 +4,117 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
+const cookieParser = require("cookie-parser");
 const connectDB = require("./config/db");
 const path = require("path");
+const logger = require("./utils/logger");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
-const { errorMiddleware, loggerMiddleware } = require("./middleware/commonMiddleware");
+const {
+  errorMiddleware,
+  loggerMiddleware,
+} = require("./middleware/commonMiddleware");
+
 const app = express();
 
-app.use(helmet()); // Set security HTTP headers
+app.get("/", (req, res) => {
+  res.json({ message: "Welcome to Event Management API" });
+});
 
-// Rate limiting: 100 requests per 10 minutes
+app.use(helmet());
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://event-management-frontend-phi.vercel.app",
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || process.env.NODE_ENV !== "production")
+        return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        logger.warn(`CORS Blocked: Origin ${origin} not in allowlist`);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  }),
+);
+
 const limiter = rateLimit({
-    windowMs: 10 * 60 * 1000,
-    max: 100,
-    message: "Too many requests from this IP, please try again later."
+  windowMs: 1 * 60 * 1000,
+  max: 1000,
+  message: "Too many requests from this IP, please try again later.",
 });
 app.use(limiter);
 
-app.use(cors({
-    origin: (origin, callback) => {
-        // In production, allow all origins (Vercel uses dynamic preview URLs)
-        if (process.env.NODE_ENV === "production") {
-            callback(null, true);
-            return;
-        }
-        
-        // In development, restrict to specific origins
-        const allowed = ["http://localhost:5173", "http://localhost:4173", process.env.FRONTEND_URL];
-        if (!origin || allowed.includes(origin)) {
-            callback(null, true);
-        } else {
-            console.error(`CORS Blocked: Origin ${origin} not in`, allowed);
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
-    credentials: true,
-}));
-
-/* -------------------- Environment Check -------------------- */
-if (!process.env.MONGO_URI) {
-    console.error("CRITICAL ERROR: MONGO_URI is not defined in environment variables.");
-} else {
-    console.log("MONGO_URI is defined.");
-}
-
-/* -------------------- Middleware -------------------- */
 app.use(loggerMiddleware);
+app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-app.use("/api", mongoSanitize()); // Data sanitization against NoSQL query injection
-app.use("/api", xss()); // Data sanitization against XSS
 
-// Debug middleware to log request path
-app.use((req, res, next) => {
-    console.log(`Incoming Request: ${req.method} ${req.url}`);
-    next();
-});
-
-/* -------------------- DB Connection Middleware -------------------- */
-// Ensure DB is connected before processing any /api requests
 app.use("/api", async (req, res, next) => {
-    try {
-        await connectDB();
-        next();
-    } catch (err) {
-        next(err);
-    }
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
-/* -------------------- DB Connection (Immediate) -------------------- */
-connectDB().catch(err => {
-    console.error("Database connection failed during startup:", err.message);
+connectDB().catch((err) => {
+  logger.error("Database connection failed during startup:", {
+    error: err.message,
+  });
 });
 
-/* -------------------- Routes -------------------- */
 const authRoutes = require("./routes/authRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 
-// Mount on /api path (standard)
 app.use("/api/auth", authRoutes);
+
+app.use("/api", mongoSanitize());
+app.use("/api", xss());
+
 app.use("/api/events", eventRoutes);
 app.use("/api/bookings", bookingRoutes);
 
-/* -------------------- Root -------------------- */
-app.get("/", (req, res) => {
-    res.json({ message: "Welcome to Event Management API" });
-});
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    if (req.header("x-forwarded-proto") !== "https") {
+      return res.redirect(`https://${req.header("host")}${req.url}`);
+    }
+    next();
+  });
+}
 
-/* -------------------- Health -------------------- */
 app.get("/api/health", (req, res) => {
-    res.json({ status: "OK", timestamp: new Date().toISOString() });
+  res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
-/* -------------------- 404 Handler -------------------- */
 app.use((req, res) => {
-    res.status(404).json({ message: "Route not found" });
+  res.status(404).json({ message: "Route not found" });
 });
 
-/* -------------------- Error Handler -------------------- */
 app.use(errorMiddleware);
 
-/* -------------------- START SERVER -------------------- */
-if (process.env.NODE_ENV !== 'production') {
-    const PORT = process.env.PORT || 5000;
-    const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-    
-    // Initialize Socket.io
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  const server = app.listen(PORT, () =>
+    logger.info(`Server running on port ${PORT}`),
+  );
+
+  try {
     const { init } = require("./utils/socket");
     init(server);
-    // Socket.io initialized
+  } catch (err) {
+    logger.error("Socket.io initialization skipped or failed");
+  }
 }
 
 module.exports = app;
