@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import { getUser } from "../utils/auth";
@@ -19,7 +19,8 @@ import {
     Sparkles,
     Shield
 } from "lucide-react";
-import { motion } from "framer-motion";
+
+
 import { useSocket } from "../hooks/useSocket";
 import { cn } from "../utils/cn";
 import { useToast } from "../context/ToastContext";
@@ -39,18 +40,18 @@ const EventDetails = () => {
 
     useEffect(() => {
         fetchEventDetails();
-    }, [id]);
+    }, [id, fetchEventDetails]);
 
-    const fetchEventDetails = async () => {
+    const fetchEventDetails = useCallback(async () => {
         try {
             const { data } = await API.get(`/events/${id}`);
             setEvent(data);
-        } catch (error) {
+        } catch {
             setError("The event you're looking for doesn't exist or could not be loaded.");
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
 
     const handleBook = async () => {
         if (!user) {
@@ -93,7 +94,7 @@ const EventDetails = () => {
 
     return (
         <div className="max-w-6xl mx-auto space-y-10 pb-20">
-            {/* Header / Nav */}
+            {}
             <div className="flex justify-between items-center px-2">
                 <Link to="/" className="group flex items-center gap-3 text-sm font-black text-text-muted hover:text-primary transition-all">
                     <div className="p-2.5 glass-hover rounded-2xl group-hover:-translate-x-1 transition-transform border border-border/50">
@@ -118,10 +119,10 @@ const EventDetails = () => {
                 </div>
             </div>
 
-            {/* Layout Grid */}
+            {}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-                {/* Main Content (8 cols) */}
+                {}
                 <div className="lg:col-span-8 space-y-10">
                     <Card className="p-0 overflow-hidden border-white/5 rounded-[40px] shadow-2xl">
                         <div className="aspect-video relative group">
@@ -145,7 +146,7 @@ const EventDetails = () => {
                         </div>
 
                         <div className="p-10 md:p-14 space-y-12">
-                            {/* Title & Stats */}
+                            {}
                             <div className="space-y-6">
                                 <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-[1.1]">
                                     {event.name}
@@ -175,7 +176,7 @@ const EventDetails = () => {
                                 </div>
                             </div>
 
-                            {/* Tags */}
+                            {}
                             {event.tags && event.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
                                     {event.tags.map(tag => (
@@ -187,7 +188,7 @@ const EventDetails = () => {
                                 </div>
                             )}
 
-                            {/* About Section */}
+                            {}
                             <div className="space-y-6 pt-10 border-t border-border/50">
                                 <h3 className="text-2xl font-black flex items-center gap-3">
                                     <Info className="text-primary" size={24} />
@@ -198,7 +199,7 @@ const EventDetails = () => {
                                 </p>
                             </div>
 
-                            {/* Agenda Section */}
+                            {}
                             {event.agenda && (
                                 <div className="space-y-6 pt-10 border-t border-border/50">
                                     <h3 className="text-2xl font-black flex items-center gap-3">
@@ -216,7 +217,7 @@ const EventDetails = () => {
                     </Card>
                 </div>
 
-                {/* Sidebar (4 cols) */}
+                {}
                 <div className="lg:col-span-4 space-y-8">
                     <Card className="sticky top-28 p-10 space-y-10 border-primary/20 bg-primary/5 backdrop-blur-xl rounded-[40px] shadow-2xl">
                         <div className="space-y-2 text-center">
@@ -240,7 +241,7 @@ const EventDetails = () => {
                                 <div className="flex items-center gap-4">
                                     <div className={cn(
                                         "p-2.5 rounded-xl",
-                                        isFull ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500"
+                                        isFull ? "status-rejected" : "status-approved"
                                     )}>
                                         {isFull ? <AlertTriangle size={20} /> : <CheckCircle size={20} />}
                                     </div>
@@ -248,7 +249,7 @@ const EventDetails = () => {
                                 </div>
                                 <span className={cn(
                                     "font-black text-xs tracking-wider uppercase",
-                                    isFull ? "text-red-500" : "text-green-500"
+                                    isFull ? "text-rejected" : "text-approved"
                                 )}>
                                     {isFull ? "SOLD OUT" : `${remainingSpots} LEFT`}
                                 </span>

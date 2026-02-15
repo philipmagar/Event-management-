@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import { getUser } from "../utils/auth";
@@ -29,15 +29,7 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const { showToast } = useToast();
 
-    useEffect(() => {
-        if (!user) {
-            navigate("/login");
-            return;
-        }
-        fetchDashboardData();
-    }, []);
-
-    const fetchDashboardData = async () => {
+    const fetchDashboardData = useCallback(async () => {
         try {
             const [bookingsRes, eventsRes] = await Promise.all([
                 API.get("/bookings/my-bookings"),
@@ -51,7 +43,16 @@ const Dashboard = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        const currentUser = getUser();
+        if (!currentUser) {
+            navigate("/login");
+            return;
+        }
+        fetchDashboardData();
+    }, [navigate, fetchDashboardData]);
 
     const handleCancelBooking = async (bookingId) => {
         if (!window.confirm("Are you sure you want to cancel this registration?")) return;
@@ -79,7 +80,7 @@ const Dashboard = () => {
 
     return (
         <div className="space-y-10">
-            {/* Header */}
+            {}
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                     <h1 className="text-4xl font-bold tracking-tight">
@@ -171,7 +172,10 @@ const Dashboard = () => {
                                                     </div>
                                                 )}
                                                 <div className="absolute top-3 left-3 flex gap-2">
-                                                    <span className="glass px-2.5 py-1 rounded-full text-[10px] font-black uppercase text-green-500 border-green-500/20">
+                                                    <span className={cn(
+                                                        "px-2.5 py-1 rounded-full text-[10px] font-black uppercase",
+                                                        booking.status === 'confirmed' ? 'status-approved' : 'status-pending'
+                                                    )}>
                                                         {booking.status}
                                                     </span>
                                                 </div>
@@ -246,9 +250,9 @@ const Dashboard = () => {
                                                 )}
                                                 <div className="absolute top-3 left-3 flex gap-2">
                                                     <span className={cn(
-                                                        "glass px-2.5 py-1 rounded-full text-[10px] font-black uppercase border-white/10",
-                                                        event.status === 'approved' ? 'text-green-500' :
-                                                            event.status === 'pending' ? 'text-yellow-500' : 'text-red-500'
+                                                        "px-2.5 py-1 rounded-full text-[10px] font-black uppercase",
+                                                        event.status === 'approved' ? 'status-approved' :
+                                                            event.status === 'pending' ? 'status-pending' : 'status-rejected'
                                                     )}>
                                                         {event.status}
                                                     </span>

@@ -28,7 +28,7 @@ const Events = () => {
     const [error, setError] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
-    const [priceRange, setPriceRange] = useState("All"); // All, Free, Paid
+    const [priceRange, setPriceRange] = useState("All"); 
     const [showFilters, setShowFilters] = useState(false);
     const { showToast } = useToast();
 

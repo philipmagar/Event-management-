@@ -38,7 +38,7 @@ const Navbar = ({ theme, onToggleTheme }) => {
                             Eventify
                         </span>
                     </Link>
-                    {/* Desktop Nav */}
+                    {}
                     <div className="hidden md:flex gap-1 items-center">
                         {navLinks.map((link) => {
                             const Icon = link.icon;
@@ -65,7 +65,7 @@ const Navbar = ({ theme, onToggleTheme }) => {
                     </button>
                     <div className="h-6 w-[1px] bg-border mx-1 hidden md:block" />
 
-                    {/* Desktop Auth */}
+                    {}
                     <div className="hidden md:flex items-center gap-4">
                         {user ? (
                             <>
@@ -85,7 +85,7 @@ const Navbar = ({ theme, onToggleTheme }) => {
                         )}
                     </div>
 
-                    {/* Mobile Menu Button */}
+                    {}
                     <button
                         className="md:hidden p-2 rounded-xl hover:bg-surface/50 text-text-muted"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -95,7 +95,7 @@ const Navbar = ({ theme, onToggleTheme }) => {
                 </div>
             </div>
 
-            {/* Mobile Menu Overlay */}
+            {}
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div

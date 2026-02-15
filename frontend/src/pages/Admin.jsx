@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import { getUser } from "../utils/auth";
@@ -18,27 +18,18 @@ import {CheckCircle,
     TrendingUp,
     Users
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { cn } from "../utils/cn";
 
 const Admin = () => {
     const [liveEvents, setLiveEvents] = useState([]);
     const [pendingEvents, setPendingEvents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [actionConfig, setActionConfig] = useState(null); // { type, event }
+    const [actionConfig, setActionConfig] = useState(null); 
     const { showToast } = useToast();
-    const user = getUser();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (!user || user.role !== "admin") {
-            navigate("/");
-            return;
-        }
-        fetchAdminData();
-    }, []);
-
-    const fetchAdminData = async () => {
+    const fetchAdminData = useCallback(async () => {
         setLoading(true);
         try {
             const [liveRes, pendingRes] = await Promise.all([
@@ -52,7 +43,16 @@ const Admin = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        const currentUser = getUser();
+        if (!currentUser || currentUser.role !== "admin") {
+            navigate("/");
+            return;
+        }
+        fetchAdminData();
+    }, [navigate, fetchAdminData]);
 
     const handleAction = async () => {
         if (!actionConfig) return;
@@ -76,9 +76,9 @@ const Admin = () => {
     };
 
     const stats = [
-        { label: "Live Events", value: liveEvents.length, icon: CheckCircle, color: "text-green-500", bg: "bg-green-500/10" },
-        { label: "Pending Reviews", value: pendingEvents.length, icon: Clock, color: "text-yellow-500", bg: "bg-yellow-500/10" },
-        { label: "Total Revenue", value: "NRS 0", icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" },
+        { label: "Live Events", value: liveEvents.length, icon: CheckCircle, className: "status-approved" },
+        { label: "Pending Reviews", value: pendingEvents.length, icon: Clock, className: "status-pending" },
+        { label: "Total Revenue", value: "NRS 0", icon: TrendingUp, className: "bg-primary/10 text-primary" },
     ];
 
     if (loading) return (
@@ -90,7 +90,7 @@ const Admin = () => {
 
     return (
         <div className="space-y-10">
-            {/* Action Modal */}
+            {}
             <Modal
                 isOpen={!!actionConfig}
                 onClose={() => setActionConfig(null)}
@@ -121,7 +121,7 @@ const Admin = () => {
                 </div>
             </Modal>
 
-            {/* Header */}
+            {}
             <header>
                 <div className="flex items-center gap-3 mb-2">
                     <Shield className="text-primary" size={24} />
@@ -131,12 +131,12 @@ const Admin = () => {
                 <p className="text-text-muted mt-2">Oversee all events, monitor updates, and manage platform integrity.</p>
             </header>
 
-            {/* Stats Overview */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {stats.map((stat, i) => (
                     <Card key={i} delay={i * 0.1} className="flex items-center gap-6 p-6">
-                        <div className={cn("p-4 rounded-2xl", stat.bg)}>
-                            <stat.icon className={stat.color} size={28} />
+                        <div className={cn("p-4 rounded-2xl", stat.className)}>
+                            <stat.icon size={28} />
                         </div>
                         <div>
                             <p className="text-sm font-medium text-text-muted">{stat.label}</p>
@@ -147,13 +147,13 @@ const Admin = () => {
             </div>
 
             <div className="space-y-12">
-                {/* Pending Approvals */}
+                {}
                 <section className="space-y-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <Clock className="text-yellow-500" size={20} />
+                            <Clock className="text-pending" size={20} />
                             <h2 className="text-2xl font-bold">Pending Reviews</h2>
-                            <span className="bg-yellow-500/10 text-yellow-500 px-3 py-1 rounded-full text-xs font-bold">
+                            <span className="status-pending px-3 py-1 rounded-full text-xs font-bold">
                                 {pendingEvents.length} ACTION REQUIRED
                             </span>
                         </div>
@@ -167,7 +167,7 @@ const Admin = () => {
                             </Card>
                         ) : (
                             pendingEvents.map((event) => (
-                                <Card key={event._id} className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 border-yellow-500/10">
+                                <Card key={event._id} className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 border-pending/10">
                                     <div className="flex items-center gap-6 flex-1">
                                         <div className="w-20 h-20 bg-slate-200 rounded-2xl overflow-hidden shrink-0">
                                             {event.image ? (
@@ -201,7 +201,7 @@ const Admin = () => {
                                         <Button
                                             variant="secondary"
                                             size="sm"
-                                            className="text-green-500 border-green-500/20 hover:bg-green-500"
+                                            className="status-approved !bg-transparent border-approved/20 hover:!bg-approved hover:text-white"
                                             onClick={() => setActionConfig({ type: "approve", event })}
                                         >
                                             Approve
@@ -209,7 +209,7 @@ const Admin = () => {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="text-red-500 bg-red-500/5 hover:bg-red-500"
+                                            className="status-rejected !bg-transparent border-rejected/20 hover:!bg-rejected hover:text-white"
                                             onClick={() => setActionConfig({ type: "reject", event })}
                                         >
                                             Reject
@@ -221,10 +221,10 @@ const Admin = () => {
                     </div>
                 </section>
 
-                {/* Live Events Table/List */}
+                {}
                 <section className="space-y-6">
                     <div className="flex items-center gap-3">
-                        <CheckCircle className="text-green-500" size={20} />
+                        <CheckCircle className="text-approved" size={20} />
                         <h2 className="text-2xl font-bold">Platform Events</h2>
                         <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">
                             {liveEvents.length} ACTIVE
@@ -265,7 +265,7 @@ const Admin = () => {
                                                 {event.createdBy?.name || "System"}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="px-2 py-1 rounded-md bg-green-500/10 text-green-500 text-[10px] font-black uppercase">
+                                                <span className="px-2 py-1 rounded-md status-approved text-[10px] font-black uppercase">
                                                     Approved
                                                 </span>
                                             </td>

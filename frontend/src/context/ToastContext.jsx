@@ -9,11 +9,6 @@ export const ToastProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
 
     const showToast = useCallback((message, type = 'success') => {
-        if (window.location.hostname === 'localhost') {
-            console.log(`[Toast Suppressed on Localhost] ${type}: ${message}`);
-            return;
-        }
-
         const id = Math.random().toString(36).substr(2, 9);
         setToasts((prev) => [...prev, { id, message, type }]);
 

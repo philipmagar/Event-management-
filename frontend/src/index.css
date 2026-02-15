@@ -1,48 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  /* Brand Colors */
-  --color-primary: #6366f1;
-  --color-primary-dark: #4f46e5;
-  --color-primary-light: #818cf8;
-  --color-secondary: #ec4899;
-  --color-accent: #8b5cf6;
+  --color-primary: #2563EB;
+  --color-primary-dark: #1D4ED8;
+  --color-primary-light: #60A5FA;
+  --color-secondary: #06B6D4;
+  --color-accent: #3B82F6;
 
-  /* System Colors - Light Mode */
-  --color-background: #f8fafc;
-  --color-surface: #ffffff;
-  --color-surface-hover: #f1f5f9;
-  --color-text: #0f172a;
-  --color-text-muted: #64748b;
-  --color-border: rgba(15, 23, 42, 0.08);
+  --color-background: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F1F5F9;
+  --color-text: #1E293B;
+  --color-text-muted: #64748B;
+  --color-border: rgba(30, 41, 59, 0.1);
 
-  /* Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.2);
+  --color-pending: #F59E0B;
+  --color-approved: #10B981;
+  --color-rejected: #EF4444;
+
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(30, 41, 59, 0.05);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 
-  /* Radii */
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
 
-  --font-sans: 'Outfit', sans-serif;
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
 }
 
 html[data-theme="dark"] {
-  /* System Colors - Dark Mode */
-  --color-background: #020617;
-  --color-surface: #0f172a;
-  --color-surface-hover: #1e293b;
-  --color-text: #f1f5f9;
-  --color-text-muted: #94a3b8;
-  --color-border: rgba(241, 245, 249, 0.1);
+  --color-primary: #3B82F6;
+  --color-primary-dark: #2563EB;
+  --color-primary-light: #93C5FD;
 
-  /* Glassmorphism - Dark Mode */
-  --glass-bg: rgba(15, 23, 42, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.05);
+  --color-background: #0F172A;
+  --color-surface: #1E293B;
+  --color-surface-hover: #334155;
+  --color-text: #E2E8F0;
+  --color-text-muted: #94A3B8;
+  --color-border: rgba(226, 232, 240, 0.1);
+
+  --color-pending: #FBBF24;
+  --color-approved: #34D399;
+  --color-rejected: #F87171;
+
+  --glass-bg: rgba(15, 23, 42, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 
@@ -52,16 +59,28 @@ html[data-theme="dark"] {
   --color-accent: var(--color-accent);
   --color-background: var(--color-background);
   --color-surface: var(--color-surface);
+  --color-surface-hover: var(--color-surface-hover);
   --color-text: var(--color-text);
   --color-text-muted: var(--color-text-muted);
   --color-border: var(--color-border);
+  --color-pending: var(--color-pending);
+  --color-approved: var(--color-approved);
+  --color-rejected: var(--color-rejected);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-heading);
 }
 
 html {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   background-color: var(--color-background);
   color: var(--color-text);
   scroll-behavior: smooth;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
 }
 
 body {
@@ -69,15 +88,15 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease;
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--color-background);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -89,7 +108,6 @@ body {
   background: var(--color-primary-light);
 }
 
-/* Custom Utilities */
 @utility glass {
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
@@ -100,7 +118,6 @@ body {
 
 .glass-card {
   @apply glass;
-  border: 1px solid var(--glass-border);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -109,9 +126,8 @@ body {
   transform: translateY(-4px);
 }
 
-/* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent), var(--color-secondary));
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-accent));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -120,48 +136,26 @@ body {
 }
 
 @keyframes gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-/* 3D Flip Effects */
-.perspective-1000 {
-  perspective: 1000px;
-}
-
-.preserve-3d {
-  transform-style: preserve-3d;
-}
-
-/* Animated Background */
-.bg-mesh {
-  background-color: var(--color-background);
-  background-image:
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.1) 0, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.1) 0, transparent 50%);
-}
-
-/* Button variants */
 .btn-primary {
   @apply relative overflow-hidden px-6 py-2.5 rounded-xl font-medium transition-all duration-300;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  background: var(--color-primary);
   color: white;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+}
+
+html[data-theme="dark"] .btn-primary {
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+  filter: brightness(1.1);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
 }
 
 .btn-secondary {
@@ -170,4 +164,20 @@ body {
 
 .btn-secondary:hover {
   @apply bg-primary text-white;
+}
+
+.status-pending { 
+  font-weight: 700;
+  color: var(--color-pending); 
+  background: color-mix(in srgb, var(--color-pending), transparent 90%); 
+}
+.status-approved { 
+  font-weight: 700;
+  color: var(--color-approved); 
+  background: color-mix(in srgb, var(--color-approved), transparent 90%); 
+}
+.status-rejected { 
+  font-weight: 700;
+  color: var(--color-rejected); 
+  background: color-mix(in srgb, var(--color-rejected), transparent 90%); 
 }
