@@ -1,41 +1,33 @@
-{"level":"info","message":"Client disconnected: _q2uCfqFW0HXkX3gAAAB","timestamp":"2026-02-14T03:17:23.548Z"}
-{"level":"info","message":"Client connected via Socket.io: fM8jkjkgFCtzMScBAAAE","timestamp":"2026-02-14T03:17:24.877Z"}
-{"level":"info","message":"GET /api/events - 304 (496ms)","timestamp":"2026-02-14T03:17:25.469Z"}
-{"level":"info","message":"GET /api/events - 304 (370ms)","timestamp":"2026-02-14T03:17:25.848Z"}
-{"level":"info","message":"Client disconnected: fM8jkjkgFCtzMScBAAAE","timestamp":"2026-02-14T03:17:26.808Z"}
-{"level":"info","message":"GET /api/events?status=approved - 200 (379ms)","timestamp":"2026-02-14T03:17:27.285Z"}
-{"level":"info","message":"GET /api/events?status=pending - 200 (397ms)","timestamp":"2026-02-14T03:17:27.309Z"}
-{"level":"info","message":"GET /api/events?status=pending - 304 (49ms)","timestamp":"2026-02-14T03:17:27.367Z"}
-{"level":"info","message":"GET /api/events?status=approved - 304 (266ms)","timestamp":"2026-02-14T03:17:27.556Z"}
-{"level":"info","message":"Client connected via Socket.io: 4uTox1gtRybdgnzGAAAH","timestamp":"2026-02-14T03:17:32.224Z"}
-{"level":"info","message":"GET /api/events - 304 (389ms)","timestamp":"2026-02-14T03:17:32.598Z"}
-{"level":"info","message":"GET /api/events - 304 (320ms)","timestamp":"2026-02-14T03:17:32.941Z"}
-{"level":"info","message":"Client disconnected: 4uTox1gtRybdgnzGAAAH","timestamp":"2026-02-14T03:17:36.121Z"}
-{"level":"info","message":"GET /api/bookings/my-bookings - 200 (61ms)","timestamp":"2026-02-14T03:17:36.213Z"}
-{"level":"info","message":"GET /api/events/my-events - 200 (57ms)","timestamp":"2026-02-14T03:17:36.227Z"}
-{"level":"info","message":"GET /api/bookings/my-bookings - 304 (45ms)","timestamp":"2026-02-14T03:17:36.261Z"}
-{"level":"info","message":"GET /api/events/my-events - 304 (50ms)","timestamp":"2026-02-14T03:17:36.279Z"}
-{"level":"info","message":"GET /api/events?status=pending - 304 (46ms)","timestamp":"2026-02-14T03:17:42.865Z"}
-{"level":"info","message":"GET /api/events?status=pending - 304 (50ms)","timestamp":"2026-02-14T03:17:42.917Z"}
-{"level":"info","message":"GET /api/events?status=approved - 304 (443ms)","timestamp":"2026-02-14T03:17:43.261Z"}
-{"level":"info","message":"GET /api/events?status=approved - 304 (192ms)","timestamp":"2026-02-14T03:17:43.455Z"}
-{"level":"info","message":"Client connected via Socket.io: 1N2I5w2hCPyHKZMdAAAK","timestamp":"2026-02-14T03:18:04.214Z"}
-{"level":"info","message":"GET /api/events - 304 (415ms)","timestamp":"2026-02-14T03:18:04.626Z"}
-{"level":"info","message":"GET /api/events - 304 (333ms)","timestamp":"2026-02-14T03:18:04.960Z"}
-{"level":"info","message":"Client disconnected: 1N2I5w2hCPyHKZMdAAAK","timestamp":"2026-02-14T03:19:12.827Z"}
-{"level":"info","message":"Client connected via Socket.io: ZCWPehpchIsQx9gSAAAN","timestamp":"2026-02-14T03:19:13.497Z"}
-{"level":"info","message":"GET /api/events - 304 (399ms)","timestamp":"2026-02-14T03:19:13.938Z"}
-{"level":"info","message":"GET /api/events - 304 (224ms)","timestamp":"2026-02-14T03:19:14.163Z"}
-{"level":"info","message":"Client disconnected: ZCWPehpchIsQx9gSAAAN","timestamp":"2026-02-14T03:19:15.074Z"}
-{"level":"info","message":"GET /api/bookings/my-bookings - 304 (47ms)","timestamp":"2026-02-14T03:19:15.145Z"}
-{"level":"info","message":"GET /api/events/my-events - 304 (47ms)","timestamp":"2026-02-14T03:19:15.152Z"}
-{"level":"info","message":"GET /api/bookings/my-bookings - 304 (47ms)","timestamp":"2026-02-14T03:19:15.193Z"}
-{"level":"info","message":"GET /api/events/my-events - 304 (54ms)","timestamp":"2026-02-14T03:19:15.208Z"}
-{"level":"info","message":"GET /api/events?status=pending - 304 (42ms)","timestamp":"2026-02-14T03:19:19.149Z"}
-{"level":"info","message":"GET /api/events?status=pending - 304 (47ms)","timestamp":"2026-02-14T03:19:19.197Z"}
-{"level":"info","message":"GET /api/events?status=approved - 304 (365ms)","timestamp":"2026-02-14T03:19:19.470Z"}
-{"level":"info","message":"GET /api/events?status=approved - 304 (181ms)","timestamp":"2026-02-14T03:19:19.653Z"}
-{"level":"info","message":"Client connected via Socket.io: l6dRkQltr8n_jYT6AAAQ","timestamp":"2026-02-14T03:19:22.406Z"}
-{"level":"info","message":"GET /api/events - 304 (377ms)","timestamp":"2026-02-14T03:19:22.772Z"}
-{"level":"info","message":"GET /api/events - 304 (193ms)","timestamp":"2026-02-14T03:19:22.967Z"}
-{"level":"info","message":"Client disconnected: l6dRkQltr8n_jYT6AAAQ","timestamp":"2026-02-14T03:19:27.366Z"}
+{"level":"info","message":"Connecting to MongoDB...","timestamp":"2026-02-14T03:22:06.651Z"}
+{"level":"info","message":"Socket.io initialized successfully.","timestamp":"2026-02-14T03:22:07.339Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2026-02-14T03:22:07.342Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2026-02-14T03:22:07.906Z"}
+{"level":"info","message":"Connecting to MongoDB...","timestamp":"2026-02-15T08:29:40.063Z"}
+{"level":"info","message":"Socket.io initialized successfully.","timestamp":"2026-02-15T08:29:41.422Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2026-02-15T08:29:41.424Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2026-02-15T08:29:42.056Z"}
+{"level":"info","message":"Client connected via Socket.io: ex5EDTJ7reXmzXciAAAC","timestamp":"2026-02-15T08:30:03.646Z"}
+{"level":"info","message":"GET /api/events - 200 (461ms)","timestamp":"2026-02-15T08:30:04.072Z"}
+{"level":"info","message":"GET /api/events - 304 (187ms)","timestamp":"2026-02-15T08:30:04.271Z"}
+{"level":"info","message":"Client disconnected: ex5EDTJ7reXmzXciAAAC","timestamp":"2026-02-15T08:30:18.737Z"}
+{"level":"info","message":"POST /api/auth/login - 401 (131ms)","timestamp":"2026-02-15T08:30:25.708Z"}
+{"level":"info","message":"POST /api/auth/login - 200 (355ms)","timestamp":"2026-02-15T08:30:36.060Z"}
+{"level":"info","message":"Client connected via Socket.io: aSzx3nh-D9_lW8FvAAAF","timestamp":"2026-02-15T08:30:36.138Z"}
+{"level":"info","message":"GET /api/events - 304 (369ms)","timestamp":"2026-02-15T08:30:36.557Z"}
+{"level":"info","message":"GET /api/events - 304 (178ms)","timestamp":"2026-02-15T08:30:36.740Z"}
+{"level":"info","message":"Client disconnected: aSzx3nh-D9_lW8FvAAAF","timestamp":"2026-02-15T08:35:31.406Z"}
+{"level":"info","message":"GET /api/health - 200 (23ms)","timestamp":"2026-02-15T08:35:59.446Z"}
+{"level":"info","message":"Client connected via Socket.io: 8HfXMGjjOz-4w0apAAAH","timestamp":"2026-02-15T08:36:31.091Z"}
+{"level":"info","message":"Connecting to MongoDB...","timestamp":"2026-02-15T08:42:46.833Z"}
+{"level":"info","message":"Socket.io initialized successfully.","timestamp":"2026-02-15T08:42:47.296Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2026-02-15T08:42:47.297Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2026-02-15T08:42:47.833Z"}
+{"level":"info","message":"GET /api/events - 200 (368ms)","timestamp":"2026-02-15T08:42:58.867Z"}
+{"level":"info","message":"Connecting to MongoDB...","timestamp":"2026-02-15T08:44:08.681Z"}
+{"level":"info","message":"Socket.io initialized successfully.","timestamp":"2026-02-15T08:44:09.376Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2026-02-15T08:44:09.378Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2026-02-15T08:44:09.946Z"}
+{"level":"info","message":"Connecting to MongoDB...","timestamp":"2026-02-15T08:44:16.836Z"}
+{"level":"info","message":"Socket.io initialized successfully.","timestamp":"2026-02-15T08:44:17.349Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2026-02-15T08:44:17.351Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2026-02-15T08:44:17.886Z"}

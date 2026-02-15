@@ -62,7 +62,17 @@ app.use("/api", async (req, res, next) => {
     await connectDB();
     next();
   } catch (err) {
-    next(err);
+    logger.error("Database connection failed in middleware:", {
+      error: err.message,
+      stack: err.stack,
+    });
+    res.status(500).json({
+      message: "Database connection failed",
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Internal server error"
+          : err.message,
+    });
   }
 });
 

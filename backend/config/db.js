@@ -18,9 +18,9 @@ const connectDB = async () => {
 
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000, // Increased for serverless cold starts
       socketTimeoutMS: 45000,
-      family: 4, 
+      family: 4,
     };
 
     logger.info("Connecting to MongoDB...");
