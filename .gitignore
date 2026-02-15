@@ -6,6 +6,8 @@ node_modules/
 dist/
 build/
 .DS_Store
+*.log
+logs/
 
 # Frontend specific
 frontend/node_modules/
@@ -15,3 +17,4 @@ frontend/.env
 # Backend specific
 backend/node_modules/
 backend/.env
+backend/*.log
